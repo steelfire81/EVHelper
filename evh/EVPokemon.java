@@ -1,5 +1,3 @@
-// This class contains no comments because it's simple as fuck
-
 package evh;
 
 public class EVPokemon {

@@ -154,7 +154,7 @@ public class EVHelper {
 	
 	private static int pokepivot(EVPokemon[] pokemonList, int start, int end)
 	{
-		// TODO: Make this not suck
+		// This is a lazy pivot selection but because it doesn't sort that many things it's passable
 		return start;
 	}
 	
