@@ -6,7 +6,7 @@ import java.awt.GridLayout;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-
+import java.util.ArrayList;
 import javax.imageio.ImageIO;
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
@@ -26,12 +26,11 @@ public class EVWindow {
 	private static final int WINDOW_HEIGHT = 275;
 	
 	private static final String MSG_NAME = "NAME:";
-	private static final String MSG_ERR_INVALID_STATS = "ERROR: Invalid stat set; exiting";
 	private static final String MSG_ERR_ICON = "ERROR: Icon not found";
 	
 	private static final int ITEM_PANEL_ROWS = 2;
-	private static final String[] ITEM_NAMES = {"NONE", "Macho Brace (2x)", "Power Weight (HP)", "Power Bracer (ATK)",
-												"Power Belt (DEF)", "Power Lens (SpA)", "Power Band (SpD)", "Power Anklet (Spe)"};
+	private static final String[] ITEM_NAMES = {"NONE", "Macho Brace (2x)", "Power Weight (+4 HP)", "Power Bracer (+4 ATK)",
+												"Power Belt (+4 DEF)", "Power Lens (+4 SpA)", "Power Band (+4 SpD)", "Power Anklet (+4 Spe)"};
 	
 	private static final String POKERUS_NAME = "Pokerus";
 	
@@ -40,7 +39,6 @@ public class EVWindow {
 	private static final String STAT_VALUES_PRETEXT = "EV VALUES";
 	private static final String STAT_GOALS_PRETEXT = "EV GOALS";
 	private static final int STAT_PANEL_HEIGHT = 3;
-	private static final int STAT_SET_ROWS = 2; // the number of rows in a valid stat set (1 for values, 1 for goals)
 	private static final boolean STAT_VALS_START_EDITABLE = true; // whether or not you can edit stat values from the start
 	private static final boolean STAT_GOALS_START_EDITABLE = true; // whether or not you can edit stat goals from the start
 	
@@ -83,40 +81,29 @@ public class EVWindow {
 	
 	
 	// Data Members
-	private EVPokemon[] pokemonList;
+	private ArrayList<EVPokemon> pokemonList;
 	private String[] pokemonNames;
 	private EVEngine engine;
 	
 	
-	public EVWindow(EVPokemon[] pokeList, String name, int[][] statSet, boolean pokerus, File originFile)
+	public EVWindow(ArrayList<EVPokemon> pokeList, EVTrainingPokemon trainerPokemon, File originFile)
 	{
-		// Confirm stat set is valid
-		if(statSet.length != STAT_SET_ROWS && statSet[0].length != STAT_NAMES.length)
-		{
-			System.err.println(MSG_ERR_INVALID_STATS);
-			System.exit(1);
-		}
-		
 		// Copy data
 		pokemonList = pokeList;
-		pokemonNames = new String[pokeList.length];
-		for(int i = 0; i < pokeList.length; i++)
-			pokemonNames[i] = pokeList[i].getName();
+		pokemonNames = new String[pokeList.size()];
+		for(int i = 0; i < pokeList.size(); i++)
+			pokemonNames[i] = pokeList.get(i).getName();
 		
 		// Initialize engine
 		engine = new EVEngine(this, pokemonList, originFile);
 		
 		// Initialize window
-		mainPanel = new JPanel(new BorderLayout());
-		
-		
-		
-		
+		mainPanel = new JPanel(new BorderLayout());		
 		
 		// North Panel: Radio buttons with items & pokerus checkbox
 		northPanel = new JPanel(new BorderLayout());
 		pokerusCheckbox = new JCheckBox(POKERUS_NAME);
-		pokerusCheckbox.setSelected(pokerus);
+		pokerusCheckbox.setSelected(trainerPokemon.hasPokerus());
 		itemPanel = new JPanel(new GridLayout(ITEM_PANEL_ROWS, ITEM_NAMES.length / ITEM_PANEL_ROWS));
 		itemButtons = new JRadioButton[ITEM_NAMES.length];
 		ButtonGroup itemButtonGroup = new ButtonGroup();
@@ -134,7 +121,7 @@ public class EVWindow {
 		namePretext.setEditable(false);
 		namePretext.setFont(new Font(namePretext.getFont().getName(), Font.BOLD, namePretext.getFont().getSize()));
 		namePanel.add(namePretext, BorderLayout.WEST);
-		nameField = new JTextField(name);
+		nameField = new JTextField(trainerPokemon.getName());
 		namePanel.add(nameField, BorderLayout.CENTER);
 		savePanel.add(namePanel);
 		buttonSave = new JButton(BUTTON_SAVE_TEXT);
@@ -147,10 +134,6 @@ public class EVWindow {
 		northPanel.add(itemPanel, BorderLayout.NORTH);
 		mainPanel.add(northPanel, BorderLayout.NORTH);
 		itemButtons[0].setSelected(true);
-		
-		
-		
-		
 		
 		// Central Panel: List of selected Pokemon
 		centralPanel = new JPanel(new GridLayout(1, POKE_PANEL_MAX));
@@ -187,10 +170,6 @@ public class EVWindow {
 		}
 		mainPanel.add(centralPanel, BorderLayout.CENTER);
 		
-		
-		
-		
-		
 		// South Panel: EV Grid
 		int numStats = STAT_NAMES.length;
 		int statPanelWidth = numStats + 2; // offset of 2 for name column and button column
@@ -212,6 +191,7 @@ public class EVWindow {
 		statPanel.add(statNames[statNames.length - 1]);
 		
 		// Add stat values
+		int[][] statSet = trainerPokemon.getEVSpread();
 		evTotals = new JTextField[statPanelWidth - 1];
 		evTotals[0] = new JTextField(STAT_VALUES_PRETEXT);
 		evTotals[0].setEditable(false);
@@ -252,12 +232,8 @@ public class EVWindow {
 		// Add to main panel
 		mainPanel.add(statPanel, BorderLayout.SOUTH);
 		
-		
-		
-		
-		
 		// Make this all visible
-		JFrame frame = new JFrame(WINDOW_NAME + name);
+		JFrame frame = new JFrame(WINDOW_NAME + trainerPokemon.getName());
 		frame.setContentPane(mainPanel);
 		frame.setSize(WINDOW_WIDTH, WINDOW_HEIGHT);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -274,7 +250,7 @@ public class EVWindow {
 		{
 			System.err.println(MSG_ERR_ICON);
 		}
-		frame.setName(WINDOW_NAME + name);
+		frame.setName(WINDOW_NAME + trainerPokemon.getName());
 		frame.setVisible(true);
 		
 		engine.updateAllPokePanels();

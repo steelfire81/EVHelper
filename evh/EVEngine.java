@@ -5,8 +5,8 @@ import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
+import java.util.ArrayList;
 import java.util.Scanner;
-
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
@@ -38,10 +38,10 @@ public class EVEngine implements ActionListener {
 	
 	// Data Members
 	private EVWindow parent;
-	private EVPokemon[] pokemonList;
+	private ArrayList<EVPokemon> pokemonList;
 	private File saveFile;
 	
-	public EVEngine(EVWindow window, EVPokemon[] pokeList, File pokeFile)
+	public EVEngine(EVWindow window, ArrayList<EVPokemon> pokeList, File pokeFile)
 	{
 		parent = window;
 		pokemonList = pokeList;
@@ -97,7 +97,7 @@ public class EVEngine implements ActionListener {
 		// First, apply from Pokemon KO'd
 		int selection = parent.pokePanelComboBoxes[index].getSelectedIndex();
 		for(int i = 0; i < totalEVYield.length; i++)
-			totalEVYield[i] += pokemonList[selection].getEVYield()[i];
+			totalEVYield[i] += pokemonList.get(selection).getEVYield()[i];
 		
 		// Next, apply stat item bonuses
 		if(parent.itemButtons[ITEM_HP].isSelected())
@@ -157,7 +157,7 @@ public class EVEngine implements ActionListener {
 	private void updatePokePanel(int index)
 	{
 		int selection = parent.pokePanelComboBoxes[index].getSelectedIndex();
-		int[] evYield = pokemonList[selection].getEVYield();
+		int[] evYield = pokemonList.get(selection).getEVYield();
 		
 		for(int i = 0; i < parent.pokePanelStatYields[index].length; i++)
 			parent.pokePanelStatYields[index][i].setText(Integer.toString(evYield[i]));

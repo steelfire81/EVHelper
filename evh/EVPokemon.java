@@ -1,6 +1,6 @@
 package evh;
 
-public class EVPokemon {
+public class EVPokemon implements Comparable<EVPokemon> {
 
 	private String name;
 	private int[] evYield;
